@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+
+<nav class="navbar" style="background-color: #ffffff;height: 50px;border-bottom: 1px solid rgb(227, 227, 227);">
+
+        <div class="container">   
+            
+            <img src="{% static 'IBM.jpg' %}" style="height: 40px;width: 70px;position: absolute;left: 10px;top:7px;border-right: 1px solid rgb(214, 214, 214);padding-right: 5px;">
+            <span style="margin-left: 5px;">
+                <h3>Sustainability Assistant</h3>
+            </span>
+            <span class="material-symbols-outlined" style="font-size: 35px;position: absolute;right: 10px;top: 10px;border-left: 1px solid rgb(205, 205, 205);padding-left: 5px;">
+                account_circle
+            </span>
+          
+        </div>
+    
+</nav>
+
+
+<div id="mySidebar" class="sidebar" onmouseover="toggleSidebar()" onmouseout="toggleSidebar()">
+    <a href="{% url 'home' %}"><i class="material-icons" style="font-size: 35px;padding: 0;margin-right: 18px;">chat</i><span class="icon-text" style="font-size: 14px;">General Q and A</span></a>
+    <a href="{% url 'doc_qna' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">file_copy</i><span class="icon-text" style="font-size: 14px;"></span>Document Q and A</span></a>
+    <a href="{% url 'classification' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">call_split</i><span class="icon-text" style="font-size: 14px;"></span>Document Classification</a></span></a>
+    <a href="{% url 'update_knowledge' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">cloud_upload</i><span class="icon-text" style="font-size: 14px;"></span>Update knowledge</a></span></a>
+  </div>
+      
+      <div id="main">
+        <div class="row">
+
+            <div class="col-8">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                 <div style="height: 70vh;background-color: rgb(236, 236, 236);margin-top: 10px;width: 95%;border-radius: 3px;font-size: 14px;font-weight: 600;">
+                 <p style="margin: 5px;">
+                    {{result}}
+                </p>   
+                 </div> 
+
+                 <div class="input-group mb-3" style="width: 95%;margin-top: 10px;">
+                    <input id="myInputField" type="text" name="query_input" class="form-control" placeholder="Ask your query" aria-label="Recipient's username" aria-describedby="button-addon2" style="border: none;background-color: rgb(229, 232, 234);">
+                    <button class="btn btn-outline-secondary" name="query" type="submit" id="button-addon2" style="border: none;background-color:rgb(229, 232, 234,0.8) ;"><i class="material-icons" style="border: none;padding: 0;margin: 0;font-size: 30px;color: #355def;">send</i></button>
+                </div>
+            </form>
+            </div>
+        
+            <div class="col-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <h6 style="margin-top: 20px;font-size: 13px;">Collection:</h6>    
+                <select name="selected_collection" class="form-select" aria-label="Default select example" style="background-color: #ffffff;width: 100%;margin-top: 10px;border: 1px solid blue" required>
+                    <option selected disabled>Select one collection</option>
+                    {% for item in col_list %}
+                    <option value="{{ item }}">{{ item }}</option>
+                    {% endfor %}
+                </select>
+                
+                {% if my_model_data %}
+                <h6 style="background-color: #eaeaea;border-radius: 2px;margin-top: 7px;font-size: 14px;font-weight: 600;"><p style="margin-left: 10px;">{{my_model_data.collection_name}}</p></h6>
+                {% endif %} 
+
+                <h6 style="margin-top: 20px;font-size: 13px;">Answer type:</h6>
+                <div class="form-check form-check-inline" style="font-size: 14px;font-weight: 600;">
+                    <input class="form-check-input" type="radio" name="exampleRadios" id="radioOption1" value="Long Answer" required>
+                    <label class="form-check-label" for="radioOption1">
+                        Long Answer
+                    </label>
+                </div>
+                <div class="form-check form-check-inline" style="font-size: 14px;font-weight: 600;">
+                    <input class="form-check-input" type="radio" name="exampleRadios" id="radioOption2" value="Short Answer">
+                    <label class="form-check-label" for="radioOption2">
+                        Short Answer
+                    </label>
+                </div>
+
+                {% if my_model_data %}
+                <h6 style="background-color: #eaeaea;border-radius: 2px;margin-top: 7px;font-size: 14px;font-weight: 600;"><p style="margin-left: 10px;">{{my_model_data.ans_type}}</p></h6>
+                {% endif %} 
+                
+                <h6 style="margin-top: 20px;font-size: 13px;">Instruction type:</h6>
+                <div class="form-check form-check-inline" style="font-size: 14px;font-weight: 600;">
+                    <input class="form-check-input" type="radio" name="exampleRadios1" id="radioOption11" value="Default" required>
+                    <label class="form-check-label" for="radioOption1">
+                        Default Instruction
+                    </label>
+                </div>
+                <div class="form-check form-check-inline" style="font-size: 14px;font-weight: 600;">
+                    <input class="form-check-input" type="radio" name="exampleRadios1" id="radioOption12" value="Custom">
+                    <label class="form-check-label" for="radioOption1">
+                        Custom Instruction
+                    </label>
+                </div>
+                {% if my_model_data %}
+                <h6 style="background-color: #eaeaea;border-radius: 2px;margin-top: 7px;font-size: 14px;font-weight: 600;"><p style="margin-left: 10px;">{{my_model_data.inst_type}}</p></h6>
+                {% endif %} 
+  
+                <div class="form-group" id="customInputField" style="display: none;">
+                    <label id="label_custompath" for="customField" style="font-size: 13px;font-weight: 600;">Custom instruction:</label>
+                    <textarea type="text-area" class="form-control" id="customField" name="customField" style="width: 100%;background-color: #eaeaea;border: none;"></textarea>
+
+                {% if my_model_data %}
+                <h6 style="background-color: #ffffff;border-radius: 2px;margin-top: 7px;font-size: 14;font-weight: 600;"><p style="margin-left: 10px;">{{my_model_data.inst}}</p></h6>
+                {% endif %}    
+                </div>
+
+                    
+
+                <br> 
+                <button type="submit" name="param" style="height: 35px;padding: 2px;background-color: rgb(61, 81, 216);border-radius: 3px;color: #ffffff;border: 1px solid blue;margin-top: 15px;font-size: 15px;width: 70px;">Apply</button>
+                </form>
+            </div>
+          </div>
+        
+      </div>
+      <script>
+        const option1Radio = document.getElementById('radioOption11');
+        const customRadio = document.getElementById('radioOption12');
+      
+        const customInputField = document.getElementById('customInputField');
+    
+        customRadio.addEventListener('change', function() {
+        if (this.checked) {
+            // Show the custom input field when the "Custom" radio button is checked
+            customInputField.style.display = 'block';
+        } else {
+            // Hide the custom input field when other radio buttons are checked
+            customInputField.style.display = 'none';
+        }
+        option1Radio.addEventListener('change', function() {
+            if (this.checked) {
+                customInputField.style.display = 'none';
+            } else {
+                customInputField.style.display = 'block';
+            }
+        });
+    });
+    </script>   
+<script src="{% static 'home.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</body>
+</html>
