@@ -62,7 +62,7 @@
         <form method="post" action="{% url 'home' %}" id="myForm">
         {% csrf_token %}
         <div class="input-group mb-3" style="position: relative;bottom: -20px;width: 80%;margin:auto;">
-            <input id="myInputField" type="text" name="query_input" class="form-control" placeholder="Ask your query" aria-label="Recipient's username" aria-describedby="button-addon2" style="border: none;background-color: rgb(229, 232, 234);">
+            <input id="myInputField" type="text" name="query_input" class="form-control" placeholder="Ask your query" aria-label="Recipient's username" aria-describedby="button-addon2" style="border: none;background-color: rgb(229, 232, 234);" required>
             <button class="btn btn-outline-secondary" type="submit" id="button-addon2" style="border: none;background-color:rgb(229, 232, 234,0.8) ;"><i class="material-icons" style="border: none;padding: 0;margin: 0;font-size: 30px;color: #355def;">send</i></button>
         </div>
         </form>

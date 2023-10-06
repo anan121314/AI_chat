@@ -42,14 +42,14 @@
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
 
-                 <div style="height: 70vh;background-color: rgb(236, 236, 236);margin-top: 10px;width: 95%;border-radius: 3px;font-size: 14px;font-weight: 600;">
-                 <p style="margin: 5px;">
-                    {{result}}
-                </p>   
+                 <div style="height: 70vh;background-color: rgb(236, 236, 236);margin-top: 10px;width: 95%;border-radius: 3px;font-size: 14px;font-weight: 600;overflow: scroll;overflow-x: hidden;">
+                 <pre>   
+                    <pre style="white-space:pre-wrap;margin-right: 7px;margin-top: 7px;"><p style="font-family: Arial, Helvetica, sans-serif;font-size: 14px;font-weight: 600;margin-left: 5px;">{{result}}</p></pre>
+                </pre>  
                  </div> 
 
                  <div class="input-group mb-3" style="width: 95%;margin-top: 10px;">
-                    <input id="myInputField" type="text" name="query_input" class="form-control" placeholder="Ask your query" aria-label="Recipient's username" aria-describedby="button-addon2" style="border: none;background-color: rgb(229, 232, 234);">
+                    <input id="myInputField" type="text" name="query_input" class="form-control" placeholder="Ask your query" aria-label="Recipient's username" aria-describedby="button-addon2" style="border: none;background-color: rgb(229, 232, 234);" required>
                     <button class="btn btn-outline-secondary" name="query" type="submit" id="button-addon2" style="border: none;background-color:rgb(229, 232, 234,0.8) ;"><i class="material-icons" style="border: none;padding: 0;margin: 0;font-size: 30px;color: #355def;">send</i></button>
                 </div>
             </form>
@@ -60,7 +60,7 @@
                     {% csrf_token %}
                     <h6 style="margin-top: 20px;font-size: 13px;">Collection:</h6>    
                 <select name="selected_collection" class="form-select" aria-label="Default select example" style="background-color: #ffffff;width: 100%;margin-top: 10px;border: 1px solid blue" required>
-                    <option selected disabled>Select one collection</option>
+                    <option selected disabled value="">Select one collection</option>
                     {% for item in col_list %}
                     <option value="{{ item }}">{{ item }}</option>
                     {% endfor %}
@@ -105,14 +105,13 @@
                 <h6 style="background-color: #eaeaea;border-radius: 2px;margin-top: 7px;font-size: 14px;font-weight: 600;"><p style="margin-left: 10px;">{{my_model_data.inst_type}}</p></h6>
                 {% endif %} 
   
-                <div class="form-group" id="customInputField" style="display: none;">
+                <div class="form-group" id="customInputField" style="display: none;margin-bottom: 10px;">
                     <label id="label_custompath" for="customField" style="font-size: 13px;font-weight: 600;">Custom instruction:</label>
                     <textarea type="text-area" class="form-control" id="customField" name="customField" style="width: 100%;background-color: #eaeaea;border: none;"></textarea>
-
-                {% if my_model_data %}
-                <h6 style="background-color: #ffffff;border-radius: 2px;margin-top: 7px;font-size: 14;font-weight: 600;"><p style="margin-left: 10px;">{{my_model_data.inst}}</p></h6>
-                {% endif %}    
                 </div>
+                {% if my_model_data %}
+                <label id="label_custompath" for="customField" style="font-size: 13px;font-weight: 600;background-color: #eaeaea;border-radius: 3px;">{{my_model_data.inst}}</label>
+                {% endif %} 
 
                     
 
@@ -126,6 +125,7 @@
       <script>
         const option1Radio = document.getElementById('radioOption11');
         const customRadio = document.getElementById('radioOption12');
+        const myTextarea = document.getElementById("customField");
       
         const customInputField = document.getElementById('customInputField');
     
@@ -133,15 +133,19 @@
         if (this.checked) {
             // Show the custom input field when the "Custom" radio button is checked
             customInputField.style.display = 'block';
+            myTextarea.setAttribute("required", "required");
         } else {
             // Hide the custom input field when other radio buttons are checked
             customInputField.style.display = 'none';
+            myTextarea.removeAttribute("required");
         }
         option1Radio.addEventListener('change', function() {
             if (this.checked) {
                 customInputField.style.display = 'none';
+                myTextarea.removeAttribute("required");
             } else {
                 customInputField.style.display = 'block';
+                myTextarea.setAttribute("required", "required");
             }
         });
     });

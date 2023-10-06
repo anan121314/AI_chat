@@ -11,9 +11,10 @@ import os
 import chromadb
 import uuid
 from .models import params
+from chromadb.config import Settings
 
 current_directory = os.getcwd()
-client = chromadb.PersistentClient(path=f"{current_directory}/collection")
+client = chromadb.PersistentClient(path=f"{current_directory}/collection",settings=Settings(allow_reset=True))
 # def create_new_collection(collection_name):
 #     collection = client.create_collection(name=collection_name)
 #     return collection
@@ -323,42 +324,48 @@ def classification(request):
     return render(request, 'classification.html',{}) 
 
 def doc_qna(request):
-    my_model_data = params.objects.first()
     data=client.list_collections()
     names=[obj.name for obj in data]
     answer=''
     ans_type=''
     if request.method == 'POST':
+        my_model_data = params.objects.last()
         if 'param' in request.POST:   
             params.objects.all().delete() 
             selected_collection_try= request.POST.get('selected_collection')
             ans_type=request.POST.get('exampleRadios')
             ins_type=request.POST.get('exampleRadios1')
-            instruction=request.POST.get('customField')
+            if ins_type=="Default":
+                instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from the information provided. Do not make  up any answers.'''
+            else:
+                instructions=request.POST.get('customField')
             my_model_instance = params(
             collection_name=selected_collection_try,
             ans_type=ans_type,
             inst_type=ins_type,
-            inst=instruction
+            inst=instructions
             )
             my_model_instance.save()
         if 'query' in request.POST:    
-            selected_collection = request.POST.get('selected_collection')
-            print(f"this is {selected_collection}")
+            selected_collection = my_model_data.collection_name
             query=request.POST.get('query_input')
             creds = Credentials("pak-4D7V0iz9n86tsi2BH48ezpshf0mmxTnnPnvHl2dJatw", api_endpoint="https://bam-api.res.ibm.com/v1")
             alice=generateparams('sample',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
-            instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from the information provided. Do not make  up any answers.'''
             if selected_collection:
+                instructions=my_model_data.inst
                 collection=client.get_collection(selected_collection)
                 result=process_text(query,collection)
                 relevant_texts=result["documents"][0]
                 answer=generate_answer_update(alice,instructions,relevant_texts,query)
             else:
                 answer='No data available. Plese make sure you have selected the collection'    
+            if answer.strip()=='' or answer==None:
+                answer='I dont have answer for the question. Please tune you query further.'     
+    my_model_data = params.objects.last()               
     return render(request, 'doc_qna.html',{"col_list":names,'result':answer,'my_model_data': my_model_data})
 
 def update_knowledge(request):
+    # client.reset()
     if request.method == 'POST':
         myfile = request.FILES['myfile']
         collection_name=request.POST.get('col_name')

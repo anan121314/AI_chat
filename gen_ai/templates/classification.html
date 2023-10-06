@@ -44,7 +44,7 @@
                 <form method="post" enctype="multipart/form-data" style="margin-left: 50px;margin-top: 30px;">
                     {% csrf_token %}
         
-                    <input type="file" name="myfile" style="font-size: 13px;font-weight: 600;background-color: #dedede;border-radius: 3px;padding: 5px;">
+                    <input type="file" name="myfile" style="font-size: 13px;font-weight: 600;background-color: #dedede;border-radius: 3px;padding: 5px;" required>
                     <br>
                     <br>
                     {% if file_name %}
@@ -53,7 +53,7 @@
                     
                     <h6 style="margin-top: 20px;font-size: 13px;">Acceptance criteria:</h6>
                     <div class="form-check" style="font-size: 14px;">
-                        <input class="form-check-input" type="radio" name="exampleRadios" id="radioOption1" value="option1" checked>
+                        <input class="form-check-input" type="radio" name="exampleRadios" id="radioOption1" value="option1" checked required>
                         <label class="form-check-label" for="radioOption1">
                             Default
                         </label>
@@ -65,10 +65,12 @@
                         </label>
                     </div>
                     <div class="form-group" id="customInputField" style="display: none;">
-                        <label id="label_custompath" for="customField" style="font-size: 13px;font-weight: 600;">File path:</label>
-                        <input type="text" class="form-control" id="customField" name="customField" style="width: 70%;background-color: #dedede;border: none;">
+
                         <label id="label_custompercent" for="custompercent" style="font-size: 13px;font-weight: 600;margin-top: 20px">Custom Acceptance percentage:</label>
                         <input type="text" class="form-control" id="custompercent" name="custompercent" style="width: 70%;background-color: #dedede;border: none;">
+                        <label id="label_custompath" for="customField" style="font-size: 13px;font-weight: 600;">File path:</label>
+                        <input type="text" class="form-control" id="customField" name="customField" style="width: 70%;background-color: #dedede;border: none;">
+                        
                     </div>
         
                     <div class="form-group" id="serachparams">
@@ -76,7 +78,7 @@
                         <input type="text" class="form-control" id="search_params" name="custom_path" style="width: 70%;background-color: #dedede;border: none;" required>
                     </div>
         
-                    <button type="submit" style="border: none;border-radius: 3px;background-color: rgb(68, 68, 211);color: white;margin-top: 20px;font-size: 14px;font-weight: 600;">Check relevancy</button>
+                    <button type="submit" style="border: none;border-radius: 3px;background-color: rgb(68, 68, 211);color: white;margin-top: 20px;font-size: 14px;font-weight: 600;height: 25px;">Check relevancy</button>
                 </form>
               </div>
               <div class="col-4">
@@ -91,14 +93,18 @@
                 {% endif %}
               </div>
             </div>
+
+            <div style="width: 100%;margin-top: 30px;font-size: 14px;margin-left: 49px;"><a href="{% url 'classification' %}"><button style="height: 30px;padding: 2px;background-color: rgb(255, 255, 255);border-radius: 3px;color: #000000;border: 1px solid blue;">Clear inputs</button></a></div>
         </div>
 
-<div style="width: 100%;text-align: center;margin-top: 50px;font-size: 14px;"><a href="{% url 'classification' %}"><button style="height: 30px;padding: 2px;background-color: rgb(255, 255, 255);border-radius: 3px;color: #000000;border: 1px solid blue;">Clear inputs</button></a></div>
+
 </div>
 
 <script>
     const option1Radio = document.getElementById('radioOption1');
     const customRadio = document.getElementById('radioOption2');
+    const custom_percent = document.getElementById('custompercent')
+    const custom_path = document.getElementById('customField')
   
     const customInputField = document.getElementById('customInputField');
 
@@ -106,15 +112,23 @@
     if (this.checked) {
         // Show the custom input field when the "Custom" radio button is checked
         customInputField.style.display = 'block';
+        custom_path.setAttribute("required", "required");
+        custom_percent.setAttribute("required", "required");
     } else {
         // Hide the custom input field when other radio buttons are checked
         customInputField.style.display = 'none';
+        custom_path.removeAttribute("required");
+        custom_percent.removeAttribute("required");
     }
     option1Radio.addEventListener('change', function() {
         if (this.checked) {
             customInputField.style.display = 'none';
+            custom_path.removeAttribute("required");
+            custom_percent.removeAttribute("required");
         } else {
             customInputField.style.display = 'block';
+            custom_path.setAttribute("required", "required");
+            custom_percent.setAttribute("required", "required");
         }
     });
 });
