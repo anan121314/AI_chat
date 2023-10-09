@@ -425,7 +425,7 @@ def summary(request):
                 selected_model='google/flan-ul2'    
             #-----------instruction selection-------------------#
             if ins_type=="Default":
-                instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from the information provided. Do not make  up any answers.'''
+                instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from information provided. Provide details related to the asnwer as well'''
             else:
                 instructions=request.POST.get('customField')    
             #--------------model selection-----------------#   
@@ -449,7 +449,7 @@ def summary(request):
                 result=process_text(text_input,collection)
                 relevant_texts=result["documents"][0]
                 answer=generate_answer_update(alice,instructions,relevant_texts,text_input)
-                answers_list.append(answer)
+                answers_list.append(f"Question: {text_input} Answer: {answer}")
             print(answers_list)
     my_model_data = summ.objects.last()        
     return render(request, 'summary.html',{"col_list":names,'my_model_data': my_model_data}) 
