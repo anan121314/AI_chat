@@ -18,7 +18,7 @@ import re
 
 current_directory = os.getcwd()
 
-creds = Credentials("pak-NXg_8gJ-etmx9Yl5r1-gC1t8vRQyZpsTS8hOqnQr0Ok", api_endpoint="https://bam-api.res.ibm.com/v1")
+creds = Credentials("pak-Z6XDyVA-pB3SKkNx00aKzSmy2BVbbvf1xdx0a2-n4xs", api_endpoint="https://bam-api.res.ibm.com/v1")
 client = chromadb.PersistentClient(path=f"{current_directory}/collection",settings=Settings(allow_reset=True))
 
 binary_params = GenerateParams(decoding_method="greedy", max_new_tokens=3, temperature=0.1)
@@ -408,7 +408,8 @@ def update_knowledge(request):
         
     return render(request, 'update_knowledge.html',{"col_list":names}) 
 
-def summary(request):   
+def summary(request):  
+    sum_answer='' 
     answers_list=[]    
     data=client.list_collections()
     names=[obj.name for obj in data]
@@ -436,11 +437,21 @@ def summary(request):
             )
             my_model_instance.save()
         if 'summ' in request.POST:
+            print("inside summ")
             my_model_data = summ.objects.last() 
             collection_id=my_model_data.collection_name
             collection=client.get_collection(collection_id)
             instructions=my_model_data.inst
-            text_inputs = request.POST.getlist('text_input')
+            input_select=request.POST.get('input_method')
+            if input_select=='enter':
+                text_inputs = request.POST.getlist('text_input')
+            elif input_select=='file':     
+                myfile = request.FILES['myfile1']
+                df = pd.read_excel(myfile)
+                column_name = "Question"
+                column_data = df[column_name]
+                text_inputs = column_data.tolist()
+                print(text_inputs)
             model_id=my_model_data.model_name
             alice=generateparams('sample',1000,0.6,model_id,creds)
             print(text_inputs)
@@ -448,7 +459,14 @@ def summary(request):
                 result=process_text(text_input,collection)
                 relevant_texts=result["documents"][0]
                 answer=generate_answer_update(alice,instructions,relevant_texts,text_input)
-                answers_list.append(f"Question: {text_input} Answer: {answer}")
+                answers_list.append(f"{text_input}?  {answer}")                
             print(answers_list)
+            combine_answers = "\n".join(answers_list)
+            print(answers_list)
+            sum_inst=f"""Provide a summary only from the information below\n{combine_answers}"""
+            print(sum_inst)
+            alice_sum=generateparams('sample',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
+            sum_answer=generate_answer(alice_sum,sum_inst)
+            print(sum_answer)
     my_model_data = summ.objects.last()        
-    return render(request, 'summary.html',{"col_list":names,'my_model_data': my_model_data}) 
+    return render(request, 'summary.html',{"col_list":names,'my_model_data': my_model_data,"answer":sum_answer}) 

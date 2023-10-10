@@ -33,6 +33,7 @@
     <a href="{% url 'doc_qna' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">file_copy</i><span class="icon-text" style="font-size: 14px;"></span>Document Q and A</span></a>
     <a href="{% url 'classification' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">call_split</i><span class="icon-text" style="font-size: 14px;"></span>Document Classification</a></span></a>
     <a href="{% url 'update_knowledge' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">cloud_upload</i><span class="icon-text" style="font-size: 14px;"></span>Update knowledge</a></span></a>
+    <a href="{% url 'summary' %}"><i class="material-icons" style="font-size: 35px;margin-right: 18px;padding: 0;">assignment</i><span class="icon-text" style="font-size: 14px;"></span>Summarisation</a></span></a>
   </div>
       
       <div id="main">
@@ -41,12 +42,13 @@
                 <h3 style="font-size: 22px;">Summarization <span style="font-size: 14px;position: relative;left: 550px;"><a href="{% url 'summary' %}"><button style="height: 30px;padding: 2px;background-color: rgb(255, 255, 255);border-radius: 3px;color: #000000;border: 1px solid blue;">Clear inputs</button></a></span></h3>
                 </div>
 
-            <div class="col-9" style="display: none;">
-                    {% csrf_token %}
+                {% if answer %}
+            <div class="col-9">
+                {% csrf_token %}
 
                  <div style="height: 65vh;background-color: rgb(236, 236, 236);margin-top: 10px;width: 95%;border-radius: 3px;font-size: 14px;font-weight: 600;overflow: scroll;overflow-x: hidden;">
                  <pre>   
-                    <pre style="white-space:pre-wrap;margin-right: 7px;margin-top: 7px;"><p style="font-family: Arial, Helvetica, sans-serif;font-size: 14px;font-weight: 600;margin-left: 5px;">{{result}}</p></pre>
+                    <pre style="white-space:pre-wrap;margin-right: 7px;margin-top: 7px;"><p style="font-family: Arial, Helvetica, sans-serif;font-size: 14px;font-weight: 600;margin-left: 5px;">{{answer}}</p></pre>
                 </pre>  
                  </div> 
 
@@ -57,10 +59,11 @@
                 
 
             </div>
+                {% endif %}
 
-            
+                {% if not answer %}
             <div class="col-9">
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
 
                 <h6 style="margin-top: 20px;font-size: 13px;">Input type:</h6>
@@ -78,15 +81,16 @@
                 </div>
             <div id="text-block">
                 <div id="input-container" style="margin-top: 10px;">
-                <input style="width: 90%; border: none;border-radius: 3px; background-color: #eaeaea;margin-bottom: 10px;" type="text" name="text_input" required>
+                <input style="width: 90%; border: none;border-radius: 3px; background-color: #eaeaea;margin-bottom: 10px;" type="text" name="text_input">
                 </div>
                 <button type="button" id="add-input" style="border: 1px solid blue;border-radius: 3px; font-size: 13px;background-color: #ffffff;margin-bottom: 10px;">Add Input</button><br>
             </div>
-                <input type="file" id="customField1" name="myfile" style="font-size: 13px;font-weight: 600;background-color: #dedede;border-radius: 3px;padding: 5px;width: 90%;margin-bottom: 10px;display: none;margin-top: 10px;">
+                <input type="file" id="customField1" name="myfile1" style="font-size: 13px;font-weight: 600;background-color: #dedede;border-radius: 3px;padding: 5px;width: 90%;margin-bottom: 10px;display: none;margin-top: 10px;">
                 
                 <input type="submit" name="summ" value="Submit" style="border: 1px solid rgb(255, 255, 255);border-radius: 3px; font-size: 13px;background-color: #4343cf;margin-bottom: 10px;color: white;"><br>
             </form>
             </div>
+                {% endif %}
         
             <div class="col-3">
                 <form method="post" enctype="multipart/form-data">
