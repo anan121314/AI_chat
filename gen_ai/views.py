@@ -18,7 +18,7 @@ import re
 
 current_directory = os.getcwd()
 
-creds = Credentials("pak-4D7V0iz9n86tsi2BH48ezpshf0mmxTnnPnvHl2dJatw", api_endpoint="https://bam-api.res.ibm.com/v1")
+creds = Credentials("pak-NXg_8gJ-etmx9Yl5r1-gC1t8vRQyZpsTS8hOqnQr0Ok", api_endpoint="https://bam-api.res.ibm.com/v1")
 client = chromadb.PersistentClient(path=f"{current_directory}/collection",settings=Settings(allow_reset=True))
 
 binary_params = GenerateParams(decoding_method="greedy", max_new_tokens=3, temperature=0.1)
@@ -309,7 +309,6 @@ def web_to_text(url):
 def home(request):     
     if request.method == 'POST':
         query = request.POST.get('query_input')      
-        creds = Credentials("pak-4D7V0iz9n86tsi2BH48ezpshf0mmxTnnPnvHl2dJatw", api_endpoint="https://bam-api.res.ibm.com/v1")
         alice=generateparams('sample',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
         answer=generate_answer(alice,f"{query}?")
         return render(request,'home.html',{"query":query,"answer":answer})
@@ -353,7 +352,7 @@ def doc_qna(request):
             if ins_type=="Default" and ans_type=="Long Answer":
                 instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from the information provided. Do not make  up any answers.'''
             elif ins_type=="Default" and ans_type=="Short Answer": 
-                instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from the information provided. Do not make  up any answers.'''
+                instructions='''You are a helpful, respectful and honest assistant. Please provide answer solely based on the information provided. If answer is not given in the content reply as no information available'''
             else:
                 instructions=request.POST.get('customField')
             #--------------model selection-----------------#   
