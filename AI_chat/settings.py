@@ -15,7 +15,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+# AWS_ACCESS_KEY_ID = 'AKIAXUCM3QLRGKUKZFIP'
+# AWS_SECRET_ACCESS_KEY = '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'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -37,7 +38,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'gen_ai',
-
 ]
 
 

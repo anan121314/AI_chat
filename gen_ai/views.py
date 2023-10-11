@@ -18,17 +18,20 @@ import re
 
 current_directory = os.getcwd()
 
+
+
 creds = Credentials("pak-Z6XDyVA-pB3SKkNx00aKzSmy2BVbbvf1xdx0a2-n4xs", api_endpoint="https://bam-api.res.ibm.com/v1")
 client = chromadb.PersistentClient(path=f"{current_directory}/collection",settings=Settings(allow_reset=True))
+#client = chromadb.PersistentClient(path=f"s3://my-bucket-anan/collection/",settings=Settings(allow_reset=True))
 
 binary_params = GenerateParams(decoding_method="greedy", max_new_tokens=3, temperature=0.1)
 binary = Model("google/flan-ul2", params=binary_params, credentials=creds)
+
 
 def generate_unique_id():
     return str(uuid.uuid4())    
 
 def update_from_doc(collection_name,data,input_source,input_title):
-    client = chromadb.PersistentClient(path=f"{current_directory}/collection")
     collection = client.create_collection(name=collection_name)
     for i in data:
         print(i)
