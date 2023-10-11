@@ -46,16 +46,10 @@
             <div class="col-9">
                 {% csrf_token %}
 
-                 <div style="height: 65vh;background-color: rgb(236, 236, 236);margin-top: 10px;width: 95%;border-radius: 3px;font-size: 14px;font-weight: 600;overflow: scroll;overflow-x: hidden;">
-                 <pre>   
-                    <pre style="white-space:pre-wrap;margin-right: 7px;margin-top: 7px;"><p style="font-family: Arial, Helvetica, sans-serif;font-size: 14px;font-weight: 600;margin-left: 5px;">{{answer}}</p></pre>
-                </pre>  
+                 <div style="height: 70vh;background-color: rgb(236, 236, 236);margin-top: 0px;width: 95%;border-radius: 3px;font-size: 14px;font-weight: 600;overflow: scroll;overflow-x: hidden;padding-top: 0;"> 
+                    <pre style="white-space:pre-wrap;margin-right: 7px;margin-top: 7px;padding-top: 0;"><p style="font-family: Arial, Helvetica, sans-serif;font-size: 14px;font-weight: 600;margin-left: 5px;padding-top: 0;">{{answer}}</p></pre>
                  </div> 
 
-                 <div class="input-group mb-3" style="width: 95%;margin-top: 10px;">
-                    <input id="myInputField" type="text" name="query_input" class="form-control" placeholder="Ask your query" aria-label="Recipient's username" aria-describedby="button-addon2" style="border: none;background-color: rgb(229, 232, 234);" required>
-                    <button class="btn btn-outline-secondary" name="query" type="submit" id="button-addon2" style="border: none;background-color:rgb(229, 232, 234,0.8) ;"><i class="material-icons" style="border: none;padding: 0;margin: 0;font-size: 30px;color: #355def;">send</i></button>
-                </div>
                 
 
             </div>
@@ -111,6 +105,7 @@
                     <option selected disabled value="">Select model</option>
                     <option value="llama-70b">meta-llama/llama-2-70b-chat</option>
                     <option value="flan-ul2">google/flan-ul2</option>
+                    <option value="flan-t5-xxl">google/flan-t5-xxl</option>
 
                 </select>
 

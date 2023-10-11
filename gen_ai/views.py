@@ -280,9 +280,10 @@ def make_prompt(instruction, context, question_text):
           + f"Information :\n{context}\n"
           + f"{question_text}?\n")
 
-def generate_answer_update(alice,instruction,relevant,text):
+def generate_answer_update(alice,instruction,relevant,text,example):
     print('entered')
-    context = '\n'.join(relevant)
+    pre_context = '\n'.join(relevant)
+    context=f"{pre_context}\n{example}"
     prompt_text = make_prompt(instruction,context, text)
     lines=prompt_text
     print(lines)
@@ -346,14 +347,15 @@ def doc_qna(request):
         if 'param' in request.POST:   
             params.objects.all().delete() 
             selected_collection_try= request.POST.get('selected_collection')
-            ans_type=request.POST.get('exampleRadios')
+            ans_type=request.POST.get('selected_model')
             ins_type=request.POST.get('exampleRadios1')
             #-----------instruction selection-------------------#
-            if ins_type=="Default" and ans_type=="Long Answer":
-                instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from the information provided. Do not make  up any answers.'''
-            elif ins_type=="Default" and ans_type=="Short Answer": 
-                instructions='''You are a helpful, respectful and honest assistant. Please provide answer solely based on the information provided. If answer is not given in the content reply as no information available'''
-            else:
+            if ins_type=="Default":
+                instructions='''You are a helpful, respectful and honest assistant.
+Please provide answer only from the given information.
+Do not generate additional content.'''
+
+            elif ins_type=="Custom": 
                 instructions=request.POST.get('customField')
             #--------------model selection-----------------#   
             my_model_instance = params(
@@ -368,14 +370,17 @@ def doc_qna(request):
             query=request.POST.get('query_input')
             if selected_collection:
                 instructions=my_model_data.inst
-                if my_model_data.ans_type=='Long Answer':
-                    alice=generateparams('sample',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
-                elif my_model_data.ans_type=='Short Answer':
-                    alice=generateparams('sample',100,0.6,'google/flan-ul2',creds)
+                if my_model_data.ans_type=='llama-70b':
+                    alice=generateparams('greedy',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
+                elif my_model_data.ans_type=='flan-ul2':
+                    alice=generateparams('sample',100,0.6,'google/flan-ul2',creds)   
+                elif my_model_data.ans_type=='flan-t5-xxl':
+                    alice=generateparams('sample',100,0.6,'google/flan-t5-xxl',creds)     
                 collection=client.get_collection(selected_collection)
                 result=process_text(query,collection)
                 relevant_texts=result["documents"][0]
-                answer=generate_answer_update(alice,instructions,relevant_texts,query)
+                example='Answer: '
+                answer=generate_answer_update(alice,instructions,relevant_texts,query,example)
             else:
                 answer='No data available. Plese make sure you have selected the collection'    
             if answer.strip()=='' or answer==None:
@@ -423,9 +428,13 @@ def summary(request):
                 selected_model='meta-llama/llama-2-70b-chat'
             elif model_name=='flan-ul2':
                 selected_model='google/flan-ul2'    
+            elif model_name=='flan-t5-xxl':
+                selected_model='google/flan-t5-xxl'    
             #-----------instruction selection-------------------#
             if ins_type=="Default":
-                instructions='''You are a helpful, respectful and honest assistant. Please provide correct answer only from information provided. Provide details related to the asnwer as well'''
+                instructions='''You are a helpful, respectful and honest assistant.
+Please provide answer only from the given information.
+Do not generate additional content.'''
             else:
                 instructions=request.POST.get('customField')    
             #--------------model selection-----------------#   
@@ -456,14 +465,15 @@ def summary(request):
             alice=generateparams('sample',1000,0.6,model_id,creds)
             print(text_inputs)
             for text_input in text_inputs:
+                example='Answer: '
                 result=process_text(text_input,collection)
                 relevant_texts=result["documents"][0]
-                answer=generate_answer_update(alice,instructions,relevant_texts,text_input)
+                answer=generate_answer_update(alice,instructions,relevant_texts,text_input,example)
                 answers_list.append(f"{text_input}?  {answer}")                
             print(answers_list)
             combine_answers = "\n".join(answers_list)
             print(answers_list)
-            sum_inst=f"""Provide a summary only from the information below\n{combine_answers}"""
+            sum_inst=f"""Read the question and answers given below. provide a detailed summary by combining the question and answers.\n{combine_answers}\nSummary: """
             print(sum_inst)
             alice_sum=generateparams('sample',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
             sum_answer=generate_answer(alice_sum,sum_inst)
