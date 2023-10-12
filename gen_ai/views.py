@@ -15,6 +15,9 @@ from chromadb.config import Settings
 import requests
 from bs4 import BeautifulSoup
 import re
+from io import StringIO
+
+pd.set_option('display.max_columns', None)
 
 current_directory = os.getcwd()
 
@@ -306,7 +309,9 @@ def web_to_text(url):
     for item in chunks_output:
         modified_item = f"{page_title}. {item}"
         chunk.append(modified_item)
-    return chunk    
+    return chunk   
+
+
 
  #--------------------Views start here--------------------------#           
 
@@ -324,12 +329,14 @@ def home(request):
 def classification(request):
     if request.method == 'POST' and request.FILES['myfile']:
         myfile = request.FILES['myfile']
-        selected_option=request.POST.get('exampleRadios')
-        file_path_custom=request.POST.get('customField')
-        custompercent=request.POST.get('custompercent')
+        # selected_option=request.POST.get('exampleRadios')
+        # file_path_custom=request.POST.get('customField')
+        # custompercent=request.POST.get('custompercent')
         search_params=request.POST.get('custom_path')
+        split_string = search_params.rsplit(',', 1)
+        result = f"Check whether the given information contains data related to {split_string[0]} or {split_string[1]}. If the information contains data related to {split_string[0]} or {split_string[1]} return output as yes else return output as no"
         chunks=to_text(myfile,myfile.name)
-        percentage=int(count_occurence(chunks,search_params))
+        percentage=int(count_occurence(chunks,result))
         print(percentage)
         context={
             'file_name': myfile.name,
@@ -345,6 +352,9 @@ def doc_qna(request):
     names=[obj.name for obj in data]
     answer=''
     ans_type=''
+    section_1=''
+    section_2=''
+    section_3=''
     if request.method == 'POST':
         my_model_data = params.objects.last()
         if 'param' in request.POST:   
@@ -373,15 +383,32 @@ Do not generate additional content.'''
             query=request.POST.get('query_input')
             if selected_collection:
                 instructions=my_model_data.inst
-                if my_model_data.ans_type=='llama-70b':
+                if my_model_data.ans_type=='meta-llama/llama-2-70b-chat':
                     alice=generateparams('greedy',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
-                elif my_model_data.ans_type=='flan-ul2':
+                elif my_model_data.ans_type=='google/flan-ul2':
                     alice=generateparams('sample',100,0.6,'google/flan-ul2',creds)   
-                elif my_model_data.ans_type=='flan-t5-xxl':
+                elif my_model_data.ans_type=='google/flan-t5-xxl':
                     alice=generateparams('sample',100,0.6,'google/flan-t5-xxl',creds)     
                 collection=client.get_collection(selected_collection)
                 result=process_text(query,collection)
+                print(result)
                 relevant_texts=result["documents"][0]
+                section_1=relevant_texts[0]
+                if section_1.startswith('my_csv'):
+                    section_1 = section_1[6:]
+                    csv_file_1 = StringIO(section_1)
+                    section_1 = pd.read_csv(csv_file_1)
+                section_2=relevant_texts[1]
+                if section_2.startswith('my_csv'):
+                    section_2 = section_2[6:]
+                    csv_file_2 = StringIO(section_2)
+                    section_2 = pd.read_csv(csv_file_2)
+                section_3=relevant_texts[2]
+                if section_3.startswith('my_csv'):
+                    section_3 = section_3[6:]
+                    csv_file_3 = StringIO(section_3)
+                    section_3 = pd.read_csv(csv_file_3)
+                print(section_1)    
                 example='Answer: '
                 answer=generate_answer_update(alice,instructions,relevant_texts,query,example)
             else:
@@ -389,7 +416,7 @@ Do not generate additional content.'''
             if answer.strip()=='' or answer==None:
                 answer='I dont have answer for the question. Please tune you query further.'     
     my_model_data = params.objects.last()               
-    return render(request, 'doc_qna.html',{"col_list":names,'result':answer,'my_model_data': my_model_data})
+    return render(request, 'doc_qna.html',{"col_list":names,'result':answer,'my_model_data': my_model_data,'section_1':section_1,'section_2':section_2,'section_3':section_3})
 
 def update_knowledge(request):
     # client.reset()
@@ -418,7 +445,6 @@ def update_knowledge(request):
 
 def summary(request):  
     sum_answer='' 
-    answers_list=[]    
     data=client.list_collections()
     names=[obj.name for obj in data]
     if request.method == 'POST':  
@@ -450,6 +476,9 @@ Do not generate additional content.'''
             my_model_instance.save()
         if 'summ' in request.POST:
             print("inside summ")
+            answers_list=[]   
+            answer_list_file=[] 
+            text_inputs=[]
             my_model_data = summ.objects.last() 
             collection_id=my_model_data.collection_name
             collection=client.get_collection(collection_id)
@@ -467,19 +496,28 @@ Do not generate additional content.'''
             model_id=my_model_data.model_name
             alice=generateparams('sample',1000,0.6,model_id,creds)
             print(text_inputs)
+            example='Answer: '
             for text_input in text_inputs:
-                example='Answer: '
                 result=process_text(text_input,collection)
                 relevant_texts=result["documents"][0]
                 answer=generate_answer_update(alice,instructions,relevant_texts,text_input,example)
-                answers_list.append(f"{text_input}?  {answer}")                
-            print(answers_list)
+                answers_list.append(f"{text_input}?  {answer}") 
+                answer_list_file.append(answer)
+            global QA_data
+            QA_data={'Question': text_inputs, 'Answer': answer_list_file}  
+            df=pd.DataFrame(QA_data)           
             combine_answers = "\n".join(answers_list)
-            print(answers_list)
             sum_inst=f"""Read the question and answers given below. provide a detailed summary by combining the question and answers.\n{combine_answers}\nSummary: """
-            print(sum_inst)
             alice_sum=generateparams('sample',1000,0.6,'meta-llama/llama-2-70b-chat',creds)
             sum_answer=generate_answer(alice_sum,sum_inst)
-            print(sum_answer)
-    my_model_data = summ.objects.last()        
+    my_model_data = summ.objects.last()  
     return render(request, 'summary.html',{"col_list":names,'my_model_data': my_model_data,"answer":sum_answer}) 
+
+def download_excel(request):
+            data = QA_data
+            df = pd.DataFrame(data)
+            response = HttpResponse(content_type='application/xlsx')
+            response['Content-Disposition'] = f'attachment; filename="Q_and_A.xlsx"'
+            with pd.ExcelWriter(response) as writer:
+                df.to_excel(writer, sheet_name='sheet1')
+            return response
