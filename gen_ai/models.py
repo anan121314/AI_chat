@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class params(models.Model):
@@ -12,3 +13,7 @@ class summ(models.Model):
     model_name = models.CharField(max_length=30,null=True)
     inst_type= models.CharField(max_length=30,null=True)
     inst=models.CharField(max_length=500,null=True)   
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)    

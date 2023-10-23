@@ -53,7 +53,6 @@ MIDDLEWARE = [
 ]
 
 
-
 ROOT_URLCONF = "AI_chat.urls"
 
 TEMPLATES = [

@@ -16,6 +16,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from io import StringIO
+from django.contrib.auth import login, logout
 
 pd.set_option('display.max_columns', None)
 
@@ -86,21 +87,24 @@ def extract_text_from_excel(file_path):
         df = excel_file.parse(sheet_name)
 
         rows_per_split = 15
-        num_splits = len(df) // rows_per_split
-        split_dataframes = []
-
-        for i in range(num_splits):
-            start_row = i * rows_per_split
-            end_row = (i + 1) * rows_per_split
-            split_df = df.iloc[start_row:end_row, :]
-            split_dataframes.append(split_df)
-
-        if len(df) % rows_per_split != 0:
-            remaining_rows = df.iloc[end_row:, :]
-            split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
-
-
-        all_split_dataframes.extend(split_dataframes)
+        if len(df)<rows_per_split:
+            all_split_dataframes.extend(df)
+        else:    
+            num_splits = len(df) // rows_per_split
+            split_dataframes = []
+    
+            for i in range(num_splits):
+                start_row = i * rows_per_split
+                end_row = (i + 1) * rows_per_split
+                split_df = df.iloc[start_row:end_row, :]
+                split_dataframes.append(split_df)
+            
+            if len(df) % rows_per_split != 0:
+                remaining_rows = df.iloc[end_row:, :]
+                split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
+    
+    
+            all_split_dataframes.extend(split_dataframes)
 
 
     return all_split_dataframes
@@ -111,23 +115,25 @@ def extract_text_from_docx(file_path):
     chunks=get_overlapped_chunks(text, 1000, 300)
     return chunks
 
+
 def extract_text_from_csv(file_path):
     text = pd.read_csv(file_path)
     df = pd.DataFrame(text)
-    rows_per_split = 15
-    num_splits = len(df) // rows_per_split
     split_dataframes = []
-
-    for i in range(num_splits):
-        start_row = i * rows_per_split
-        end_row = (i + 1) * rows_per_split
-        split_df = df.iloc[start_row:end_row, :]
-        split_dataframes.append(split_df)
-
-
-    if len(df) % rows_per_split != 0:
-        remaining_rows = df.iloc[end_row:, :]
-        split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
+    rows_per_split = 15
+    if len(df)<rows_per_split:
+            split_dataframes.extend(df)
+    else:        
+        num_splits = len(df) // rows_per_split
+        for i in range(num_splits):
+            start_row = i * rows_per_split
+            end_row = (i + 1) * rows_per_split
+            split_df = df.iloc[start_row:end_row, :]
+            split_dataframes.append(split_df)
+    
+        if len(df) % rows_per_split != 0:
+            remaining_rows = df.iloc[end_row:, :]
+            split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
 
 
     return split_dataframes
@@ -182,21 +188,24 @@ def extract_text_from_excel_update(file_path):
 
 
         rows_per_split = 15
-        num_splits = len(df) // rows_per_split
-        split_dataframes = []
+        if len(df)<rows_per_split:
+            all_split_dataframes.extend(df)
+        else:    
+            num_splits = len(df) // rows_per_split
+            split_dataframes = []
 
-        for i in range(num_splits):
-            start_row = i * rows_per_split
-            end_row = (i + 1) * rows_per_split
-            split_df = df.iloc[start_row:end_row, :]
-            split_dataframes.append(split_df)
+            for i in range(num_splits):
+                start_row = i * rows_per_split
+                end_row = (i + 1) * rows_per_split
+                split_df = df.iloc[start_row:end_row, :]
+                split_dataframes.append(split_df)
 
-        if len(df) % rows_per_split != 0:
-            remaining_rows = df.iloc[end_row:, :]
-            split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
+            if len(df) % rows_per_split != 0:
+                remaining_rows = df.iloc[end_row:, :]
+                split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
 
 
-        all_split_dataframes.extend(split_dataframes)
+            all_split_dataframes.extend(split_dataframes)
     text_list=[]
     for idx, split_df in enumerate(all_split_dataframes):
          print(f"Split DataFrame {idx + 1}:")
@@ -216,20 +225,24 @@ def extract_text_from_docx_update(file_path):
 def extract_text_from_csv_update(file_path):
     text = pd.read_csv(file_path)
     df = pd.DataFrame(text)
-    rows_per_split = 15
-    num_splits = len(df) // rows_per_split
     split_dataframes = []
+    rows_per_split = 15
+    if len(df)<rows_per_split:
+        split_dataframes.extend(df)
+    else:    
+        num_splits = len(df) // rows_per_split
 
-    for i in range(num_splits):
-        start_row = i * rows_per_split
-        end_row = (i + 1) * rows_per_split
-        split_df = df.iloc[start_row:end_row, :]
-        split_dataframes.append(split_df)
+
+        for i in range(num_splits):
+            start_row = i * rows_per_split
+            end_row = (i + 1) * rows_per_split
+            split_df = df.iloc[start_row:end_row, :]
+            split_dataframes.append(split_df)
 
 
-    if len(df) % rows_per_split != 0:
-        remaining_rows = df.iloc[end_row:, :]
-        split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
+        if len(df) % rows_per_split != 0:
+            remaining_rows = df.iloc[end_row:, :]
+            split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
 
 
     text_list=[]
@@ -288,9 +301,9 @@ def make_prompt(instruction, context, question_text):
 
 def generate_answer_update(alice,instruction,relevant,text,example):
     print('entered')
-    pre_context = '\n'.join(relevant)
-    context=f"{pre_context}\n{example}"
-    prompt_text = make_prompt(instruction,context, text)
+    context = '\n'.join(relevant)
+    pre_prompt_text = make_prompt(instruction,context, text)
+    prompt_text=f"{pre_prompt_text}\n{example}"
     lines=prompt_text
     print(lines)
     alice_response = alice.generate([lines])   
@@ -313,7 +326,15 @@ def web_to_text(url):
 
 
 
- #--------------------Views start here--------------------------#           
+ #--------------------Views start here--------------------------#        
+ # 
+def user_login(request):
+    # Implement login logic here
+    pass
+
+def user_logout(request):
+    logout(request)
+    return redirect('home')   
 
 def home(request):     
     if request.method == 'POST':
