@@ -80,6 +80,7 @@ def extract_text_from_excel(file_path):
 
 
     all_split_dataframes = []
+    split_dataframes = []
 
 
     for sheet_name in excel_file.sheet_names:
@@ -88,10 +89,10 @@ def extract_text_from_excel(file_path):
 
         rows_per_split = 15
         if len(df)<rows_per_split:
-            all_split_dataframes.extend(df)
+            split_dataframes.append(df)
         else:    
             num_splits = len(df) // rows_per_split
-            split_dataframes = []
+            
     
             for i in range(num_splits):
                 start_row = i * rows_per_split
@@ -104,7 +105,7 @@ def extract_text_from_excel(file_path):
                 split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
     
     
-            all_split_dataframes.extend(split_dataframes)
+        all_split_dataframes.extend(split_dataframes)
 
 
     return all_split_dataframes
@@ -122,7 +123,7 @@ def extract_text_from_csv(file_path):
     split_dataframes = []
     rows_per_split = 15
     if len(df)<rows_per_split:
-            split_dataframes.extend(df)
+            split_dataframes.append(df)
     else:        
         num_splits = len(df) // rows_per_split
         for i in range(num_splits):
@@ -181,6 +182,7 @@ def extract_text_from_excel_update(file_path):
 
 
     all_split_dataframes = []
+    split_dataframes = []
 
     for sheet_name in excel_file.sheet_names:
 
@@ -189,10 +191,10 @@ def extract_text_from_excel_update(file_path):
 
         rows_per_split = 15
         if len(df)<rows_per_split:
-            all_split_dataframes.extend(df)
+            split_dataframes.append(df)
         else:    
             num_splits = len(df) // rows_per_split
-            split_dataframes = []
+            
 
             for i in range(num_splits):
                 start_row = i * rows_per_split
@@ -205,14 +207,13 @@ def extract_text_from_excel_update(file_path):
                 split_dataframes[-1] = pd.concat([split_dataframes[-1], remaining_rows], axis=0)
 
 
-            all_split_dataframes.extend(split_dataframes)
+        all_split_dataframes.extend(split_dataframes)
     text_list=[]
     for idx, split_df in enumerate(all_split_dataframes):
          print(f"Split DataFrame {idx + 1}:")
          print(split_df)
          text_xlx='my_xlx'+split_df.to_csv(index=False)
          text_list.append(text_xlx)
-         print()
     return text_list
 
 
@@ -228,7 +229,7 @@ def extract_text_from_csv_update(file_path):
     split_dataframes = []
     rows_per_split = 15
     if len(df)<rows_per_split:
-        split_dataframes.extend(df)
+        split_dataframes.append(df)
     else:    
         num_splits = len(df) // rows_per_split
 
@@ -247,6 +248,7 @@ def extract_text_from_csv_update(file_path):
 
     text_list=[]
     for idx, split_df in enumerate(split_dataframes):
+        print(f"Split DataFrame {idx + 1}:")
         print(split_df)
         text_csv='my_csv'+split_df.to_csv(index=False)
         text_list.append(text_csv)
